@@ -26,7 +26,7 @@
   function init() {
     renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
     renderer.setSize(innerWidth, innerHeight);
-    renderer.setPixelRatio(Math.min(2, devicePixelRatio));
+    renderer.setPixelRatio(Math.min(('ontouchstart' in window ? 1.5 : 2), devicePixelRatio));
     renderer.outputEncoding = THREE.sRGBEncoding;
     renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.domElement.id = 'game';
