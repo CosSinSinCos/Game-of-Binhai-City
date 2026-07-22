@@ -22,12 +22,20 @@ window.Input = (function () {
   });
 
   // ============ 触摸 / 移动端控制 ============
-  const touch = { stickId: null, ox: 0, oy: 0, camId: null, cx: 0, cy: 0 };
-  const STICK_R = 56, STICK_DEAD = 14;
+  // 摇杆为「常驻左下角」：底座默认可见，手指在左半屏拖动即控制方向
+  const touch = { stickId: null, camId: null, cx: 0, cy: 0 };
+  const STICK_R = 52, STICK_DEAD = 14;
   let stickBase = null, stickKnob = null;
   function refreshStickUI(dx, dy) { if (stickKnob) stickKnob.style.transform = 'translate(' + dx + 'px,' + dy + 'px)'; }
+  function stickCenter() {
+    if (!stickBase) stickBase = document.getElementById('stick-base');
+    if (!stickBase) return { x: innerWidth * 0.18, y: innerHeight - 120 };
+    const r = stickBase.getBoundingClientRect();
+    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+  }
   function applyStick(x, y) {
-    let dx = x - touch.ox, dy = y - touch.oy;
+    const c = stickCenter();
+    let dx = x - c.x, dy = y - c.y;
     const len = Math.hypot(dx, dy);
     if (len > STICK_R) { dx = dx / len * STICK_R; dy = dy / len * STICK_R; }
     refreshStickUI(dx, dy);
@@ -42,18 +50,16 @@ window.Input = (function () {
     const s = touchState;
     s.KeyW = s.ArrowUp = s.KeyS = s.ArrowDown = s.KeyA = s.ArrowLeft = s.KeyD = s.ArrowRight = false;
     refreshStickUI(0, 0);
-    if (stickBase) stickBase.style.display = 'none';
   }
   function touchPress(code) { edge[code] = true; }        // 一次性触发（被 hit 消费）
   function touchHold(code, on) { touchState[code] = on; } // 持续按住（被 isDown 读取）
 
   window.addEventListener('touchstart', (e) => {
     for (const t of e.changedTouches) {
-      if (t.target && t.target.closest && t.target.closest('.touch-ui')) continue;
+      // 按钮区交给按钮自身处理，不抢事件
+      if (t.target && t.target.closest && t.target.closest('.tbtn')) continue;
       if (t.clientX < innerWidth * 0.5 && touch.stickId === null) {
-        touch.stickId = t.identifier; touch.ox = t.clientX; touch.oy = t.clientY;
-        stickBase = document.getElementById('stick-base');
-        if (stickBase) { stickBase.style.left = t.clientX + 'px'; stickBase.style.top = t.clientY + 'px'; stickBase.style.display = 'block'; stickKnob = document.getElementById('stick-knob'); }
+        touch.stickId = t.identifier;
         applyStick(t.clientX, t.clientY);
       } else if (t.clientX >= innerWidth * 0.5 && touch.camId === null) {
         touch.camId = t.identifier; touch.cx = t.clientX; touch.cy = t.clientY; mouse.down = true;
