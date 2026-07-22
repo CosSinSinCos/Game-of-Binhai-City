@@ -149,8 +149,12 @@
 
   function updateCamera(dt, target, followYaw) {
     // 鼠标自由视角
-    if (Input.mouse.down) { cam.freeYaw += Input.mouse.dx * 0.005; cam.freePitch += Input.mouse.dy * 0.004; }
-    else { cam.freeYaw *= (1 - Math.min(1, dt * 2.2)); cam.freePitch *= (1 - Math.min(1, dt * 2.2)); }
+    if (Input.mouse.down) {
+      cam.freeYaw += Input.mouse.dx * 0.005; cam.freePitch += Input.mouse.dy * 0.004;
+    } else if (!Input.mouse.touch) {
+      // 仅桌面鼠标松手时缓缓回正；触摸旋转（手机右侧拖拽）保持当前角度
+      cam.freeYaw *= (1 - Math.min(1, dt * 2.2)); cam.freePitch *= (1 - Math.min(1, dt * 2.2));
+    }
     cam.freePitch = Math.max(-0.25, Math.min(0.95, cam.freePitch));
 
     cam.yaw = lerpAngle(cam.yaw, followYaw, Math.min(1, dt * 3));

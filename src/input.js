@@ -5,7 +5,7 @@ window.Input = (function () {
   const keys = {};
   const touchState = {};      // 触摸模拟按键（摇杆 / 按钮）
   const edge = {};            // 单次触发
-  const mouse = { down: false, dx: 0, dy: 0, x: 0, y: 0 };
+  const mouse = { down: false, dx: 0, dy: 0, x: 0, y: 0, touch: false };
 
   window.addEventListener('keydown', (e) => {
     if (!keys[e.code]) edge[e.code] = true;
@@ -15,7 +15,7 @@ window.Input = (function () {
   });
   window.addEventListener('keyup', (e) => { keys[e.code] = false; });
 
-  window.addEventListener('mousedown', (e) => { mouse.down = true; mouse.x = e.clientX; mouse.y = e.clientY; });
+  window.addEventListener('mousedown', (e) => { mouse.down = true; mouse.touch = false; mouse.x = e.clientX; mouse.y = e.clientY; });
   window.addEventListener('mouseup', () => { mouse.down = false; });
   window.addEventListener('mousemove', (e) => {
     if (mouse.down) { mouse.dx += e.clientX - mouse.x; mouse.dy += e.clientY - mouse.y; mouse.x = e.clientX; mouse.y = e.clientY; }
@@ -62,7 +62,7 @@ window.Input = (function () {
         touch.stickId = t.identifier;
         applyStick(t.clientX, t.clientY);
       } else if (t.clientX >= innerWidth * 0.5 && touch.camId === null) {
-        touch.camId = t.identifier; touch.cx = t.clientX; touch.cy = t.clientY; mouse.down = true;
+        touch.camId = t.identifier; touch.cx = t.clientX; touch.cy = t.clientY; mouse.down = true; mouse.touch = true;
       }
     }
   }, { passive: false });
